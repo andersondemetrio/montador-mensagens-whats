@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Montador de Templates WhatsApp — Intelipost</title>
+<style>
+  :root{
+    --green:#00A859;
+    --green-dark:#008f4c;
+    --navy:#002244;
+    --bg:#f0f2f5;
+  }
+  *{box-sizing:border-box;}
+  body{
+    font-family:'Segoe UI', Arial, sans-serif;
+    background-color:var(--bg);
+    margin:0;
+    color:#111b21;
+    display:flex;
+    justify-content:center;
+    padding:24px 16px 60px;
+  }
+  .container{
+    display:flex;
+    gap:30px;
+    background:white;
+    padding:30px;
+    border-radius:12px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.1);
+    width:100%;
+    max-width:1100px;
+    flex-wrap:wrap;
+  }
+  .editor-section{flex:1.3; min-width:340px;}
+  .preview-section{flex:0.7; min-width:280px; max-width:400px; display:flex; flex-direction:column;}
+
+  h2{margin-top:0; color:var(--green); font-size:20px;}
+  h3{margin-top:0; font-size:15px; color:var(--navy); border-bottom:2px solid #e2e8f0; padding-bottom:8px;}
+  label{font-size:14px; font-weight:bold; color:var(--navy); display:block; margin:15px 0 5px;}
+
+  .vars-container{background:#f8f9fa; padding:15px; border-radius:8px; border:1px solid #ddd; max-height:250px; overflow-y:auto;}
+  .category-block{margin-bottom:20px;}
+  .category-title{font-size:13px; font-weight:bold; color:var(--navy); background-color:#e8f5e9; padding:8px 12px; border-radius:6px; margin:10px 0 8px 0; border-left:4px solid var(--green);}
+  .var-row{display:flex; align-items:center; padding:6px 8px; border-bottom:1px solid #eef2f5; gap:15px; transition:0.2s;}
+  .var-row:hover{background-color:#f1fbf6;}
+  .var-btn-container{flex:0 0 200px; display:flex;}
+  .var-btn{background:#e3f2fd; color:#0B57D0; border:1px solid #90caf9; padding:5px 8px; border-radius:6px; cursor:pointer; font-size:11px; font-family:'Roboto Mono', monospace; width:100%; text-align:left;}
+  .var-btn:hover{background:#0B57D0; color:white; border-color:#0B57D0;}
+  .var-desc{font-size:12px; color:#4a5568; flex-grow:1;}
+
+  textarea{width:100%; height:140px; padding:12px; border-radius:8px; border:1px solid #ccc; font-family:inherit; font-size:14px; resize:vertical;}
+  textarea:focus{border-color:var(--green); outline:none;}
+
+  .marketing-warning{display:none; background-color:#ffebee; color:#c62828; border-left:4px solid #f44336; padding:12px 15px; border-radius:6px; font-size:12.5px; margin-top:10px; line-height:1.5;}
+  .marketing-warning ul{margin:5px 0 0 18px; padding:0;}
+  .marketing-warning li{margin-bottom:5px;}
+
+  .test-inputs{display:block; background:#f8f9fa; padding:15px; border-radius:8px; border:1px solid #e2e8f0;}
+  .input-row{margin-bottom:10px;}
+  .input-row:last-child{margin-bottom:0;}
+  .input-row span{font-size:12px; font-family:'Roboto Mono', monospace; color:#0B57D0; display:block; margin-bottom:4px; font-weight:bold;}
+  .test-inputs input{width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; font-size:14px;}
+  .test-inputs input:focus{border-color:var(--green); outline:none;}
+
+  .form-card{background:#f8f9fa; border:1px solid #e2e8f0; border-radius:8px; padding:20px; margin-top:20px;}
+  .form-group{margin-bottom:12px;}
+  .form-group input, .form-group select{width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px;}
+  .form-group input:focus, .form-group select:focus{border-color:var(--green); outline:none;}
+  .form-help{font-size:11px; color:#718096; margin-top:2px;}
+
+  .info-alert-box{background-color:#fff9db; border-left:4px solid #f59f00; padding:12px 15px; border-radius:6px; font-size:12px; color:#664d03; margin-bottom:15px; line-height:1.5;}
+
+  .btn-submit{background-color:var(--green); color:white; border:none; padding:12px 16px; font-size:14px; font-weight:bold; border-radius:6px; cursor:pointer; width:100%; transition:0.2s; margin-top:10px;}
+  .btn-submit:hover{background-color:var(--green-dark);}
+  .btn-submit:disabled{background-color:#cbd5e1; cursor:not-allowed;}
+
+  .alert-box{display:none; padding:12px; border-radius:6px; font-size:13px; margin-top:10px; text-align:center; font-weight:bold;}
+  .alert-success{display:block; background-color:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7;}
+  .alert-error{display:block; background-color:#ffebee; color:#c62828; border:1px solid #ef9a9a;}
+
+  .wa-bg{background-image:url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-color:#efeae2; padding:20px 15px; border-radius:8px; flex-grow:1; box-shadow:inset 0 0 5px rgba(0,0,0,0.1); display:flex; flex-direction:column; justify-content:flex-end;}
+  .wa-bubble{background-color:#d9fdd3; padding:8px 9px 8px 12px; border-radius:8px; border-top-right-radius:0; max-width:85%; align-self:flex-end; position:relative; box-shadow:0 1px 1px rgba(0,0,0,0.1); font-size:15px; line-height:21px; word-wrap:break-word;}
+  .wa-bubble::after{content:''; position:absolute; top:0; right:-8px; width:0; height:0; border:8px solid transparent; border-left-color:#d9fdd3; border-top:0;}
+  .wa-footer{display:flex; justify-content:flex-end; align-items:center; margin-top:4px; font-size:11px; color:#667781;}
+  .wa-footer .time{margin-right:4px;}
+  .wa-footer .ticks{color:#53bdeb; font-weight:bold; font-size:13px;}
+  .var-highlight{font-weight:bold; color:#000; background-color:rgba(255,235,59,0.4); padding:0 3px; border-radius:3px;}
+
+  .guide-card{background:#f8f9fa; border:1px solid #e2e8f0; border-radius:8px; padding:20px; margin-top:25px;}
+  .guide-title{margin-top:0; font-size:15px; color:var(--navy); border-bottom:2px solid #e2e8f0; padding-bottom:8px; font-weight:bold;}
+  details{background:white; border:1px solid #cbd5e1; border-radius:6px; margin-bottom:8px;}
+  details[open]{border-color:var(--green); box-shadow:0 2px 6px rgba(0,168,89,0.1);}
+  summary{padding:12px; font-size:13px; font-weight:bold; color:var(--navy); cursor:pointer; outline:none; user-select:none;}
+  summary:hover{color:var(--green);}
+  .details-content{padding:12px; border-top:1px solid #e2e8f0; font-size:12.5px; line-height:1.5; color:#334155;}
+  .details-content table{width:100%; border-collapse:collapse; margin-top:10px; font-size:11.5px;}
+  .details-content th{background:var(--navy); color:white; text-align:left; padding:6px;}
+  .details-content td{border-bottom:1px solid #e2e8f0; padding:6px;}
+  .details-content td strong{color:var(--green);}
+  .correct-badge{background:#e8f5e9; color:#2e7d32; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:10px;}
+  .incorrect-badge{background:#ffebee; color:#c62828; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:10px;}
+</style>
+</head>
+<body>
+
+<!-- Formulário oculto para o Netlify detectar no build (Netlify Forms) -->
+<form name="template-whatsapp" data-netlify="true" data-netlify-honeypot="bot-field" hidden>
+  <input type="text" name="clientName" />
+  <input type="email" name="clientEmail" />
+  <input type="text" name="analystName" />
+  <input type="text" name="whatsappStatus" />
+  <textarea name="templateText"></textarea>
+</form>
+
+<div class="container">
+  <div class="editor-section">
+    <h2>Montador de Templates - Intelipost</h2>
+
+    <label>1. Clique na variável para inserir:</label>
+    <div class="vars-container" id="varsList"><span style="color:#888; font-style:italic;">Carregando variáveis...</span></div>
+
+    <label>2. Escreva a sua mensagem:</label>
+    <textarea id="msgInput" placeholder="Ex: Olá {END_CUSTOMER_FIRST_NAME}! O seu pedido {ORDER_NUMBER} já está com a transportadora."></textarea>
+
+    <div id="marketingWarning" class="marketing-warning"></div>
+
+    <div id="testAreaContainer" style="display:none; margin-top:15px;">
+      <label>3. Preencha os dados reais para simulação:</label>
+      <div class="test-inputs" id="testInputs"></div>
+    </div>
+
+    <div class="form-card">
+      <h3>📋 Informações para Homologação</h3>
+
+      <div class="info-alert-box">
+        <strong>⚠️ Importante para o Envio:</strong> Se você for configurar múltiplos status (ex: <em>despachado</em>, <em>saiu_para_entrega</em>, etc.), é necessário preencher e realizar <strong>um envio de formulário separado para cada status</strong>.
+      </div>
+
+      <div class="form-group">
+        <label style="margin:0 0 5px 0;">Nome da Empresa e Nome Completo:</label>
+        <input type="text" id="clientName" placeholder="Ex: Empresa 1 - João Silva" required>
+      </div>
+
+      <div class="form-group">
+        <label style="margin:0 0 5px 0;">Seu E-mail (Para receber uma cópia do template):</label>
+        <input type="email" id="clientEmail" placeholder="Ex: joao@empresa.com.br" required>
+      </div>
+
+      <div class="form-group">
+        <label style="margin:0 0 5px 0;">Analista Intelipost Responsável:</label>
+        <select id="analystName" required>
+          <option value="">Selecione o seu analista...</option>
+          <option value="Mariele Santos">Mariele Santos</option>
+          <option value="Alexandre Jesus">Alexandre Jesus</option>
+          <option value="Anderson Demetrio">Anderson Demetrio</option>
+          <option value="Marina Beatriz">Marina Beatriz</option>
+          <option value="Renato Mansini">Renato Mansini</option>
+          <option value="Larissa Amaral">Larissa Amaral</option>
+          <option value="Red Junior">Red Junior</option>
+          <option value="Kamily Santos">Kamily Santos</option>
+          <option value="Nathália Goulart">Nathália Goulart</option>
+          <option value="Nathy Louise">Nathy Louise</option>
+          <option value="Luana Santos">Luana Santos</option>
+          <option value="Dayane Costa">Dayane Costa</option>
+          <option value="Débora Santos">Débora Santos</option>
+          <option value="Douglas Cursino">Douglas Cursino</option>
+          <option value="Eduardo Barbosa">Eduardo Barbosa</option>
+          <option value="Greice Santos">Greice Santos</option>
+          <option value="Juliana Fernandes">Juliana Fernandes</option>
+          <option value="Lucas Stanley">Lucas Stanley</option>
+          <option value="Wellington Silva">Wellington Silva</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label style="margin:0 0 5px 0;">Status a ser usado no WhatsApp:</label>
+        <input type="text" id="whatsappStatus" placeholder="Ex: despachado" oninput="cleanTemplateName(this)" required>
+        <div class="form-help">Apenas letras minúsculas, números e sublinhados (_). Sem espaços ou acentos.</div>
+      </div>
+
+      <button id="btnSubmit" class="btn-submit" onclick="submitTemplate()" type="button">🟢 Concordar e Enviar para Intelipost</button>
+      <div id="alertBox" class="alert-box"></div>
+    </div>
+
+    <div class="guide-card">
+      <h3 class="guide-title">💡 Guia de Regras da Meta (WhatsApp)</h3>
+      <details>
+        <summary>🔍 O que é Utilidade (Utility) vs. Marketing?</summary>
+        <div class="details-content">
+          No ecossistema da Meta, a intenção da mensagem define sua categoria e seu custo.<br><br>
+          <strong>🟢 Utilidade (Utility):</strong> Mensagens que facilitam transações ou atualizações confirmadas. No contexto logístico da Intelipost, são notificações sobre o andamento do pedido (ex: despacho, previsão de entrega). O tom deve ser neutro e direto.<br><br>
+          <strong>🔴 Marketing:</strong> Mensagens promocionais, ofertas, novidades ou tentativas de reengajamento. O tom é persuasivo e estimulante.
+        </div>
+      </details>
+      <details>
+        <summary>📋 Critérios Práticos de Classificação</summary>
+        <div class="details-content">
+          Mantenha a mensagem puramente informativa para evitar que a Meta reclassifique seu template como Marketing:
+          <table>
+            <thead><tr><th>Característica</th><th>Utilidade (Padrão Intelipost)</th><th>Marketing (O que EVITAR)</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Conteúdo</strong></td><td>Status de rastreio, previsão de entrega</td><td>Cupons de desconto, lançamentos</td></tr>
+              <tr><td><strong>Adjetivos</strong></td><td>Fatos neutros</td><td>"Incrível", "Imperdível", "Exclusivo"</td></tr>
+              <tr><td><strong>CTA</strong></td><td>"Acompanhar Pedido"</td><td>"Comprar Agora", "Saiba Mais"</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+      <details>
+        <summary>✅ Regras de Ouro para Aprovação (Checklist)</summary>
+        <div class="details-content">
+          Para garantir que a Meta aprove seu template como Utilidade, siga estas restrições:
+          <ul>
+            <li><strong>Nexo Transacional:</strong> Contextualize o evento logo de início (Ex: <em>"Sobre o seu pedido..."</em>).</li>
+            <li><strong>Isolamento de Variáveis:</strong>
+              <br><span class="incorrect-badge">Errado</span> Começar com variável: <em>"{END_CUSTOMER_FIRST_NAME}, seu pedido..."</em>
+              <br><span class="incorrect-badge">Errado</span> Terminar com variável: <em>"...seu código de rastreio é {TRACKING_CODE}."</em>
+              <br><span class="correct-badge">Correto</span> Inicie/finalize com palavras estáveis: <em>"Olá {END_CUSTOMER_FIRST_NAME}, seu pedido foi despachado."</em>
+            </li>
+            <li><strong>Proporção de Texto:</strong> Mínimo de 3 palavras estáticas para cada variável inserida.</li>
+            <li><strong>Links Oficiais:</strong> Use apenas o domínio oficial da sua marca ou da Intelipost. Nunca utilize encurtadores (como bit.ly ou t.co).</li>
+          </ul>
+        </div>
+      </details>
+      <details>
+        <summary>❌ O que EVITAR (Red Flags de Reprovação)</summary>
+        <div class="details-content">
+          <ul>
+            <li><strong>Saudações Excessivas:</strong> Evite <em>"Espero que seu dia esteja sendo maravilhoso!"</em>. Evite saudações informais longas.</li>
+            <li><strong>Emojis de Vendas:</strong> Evite 🚀, 🤑, 🎁, 🔥. Prefira emojis funcionais e logísticos como 📦, 🚚, ✅.</li>
+            <li><strong>Urgência Artificial:</strong> Evite termos comerciais como <em>"Corra para garantir"</em> ou <em>"Última chance"</em>.</li>
+            <li><strong>Interrogação de Engajamento:</strong> Nunca faça pesquisas ou feedbacks na mesma mensagem de atualização de rastreio (Ex: <em>"Gostou da nossa loja?"</em>).</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <div class="preview-section">
+    <label style="color:var(--green); margin-top:0;">📱 Como o cliente vai receber:</label>
+    <div class="wa-bg">
+      <div class="wa-bubble">
+        <span id="waText">Comece a digitar no lado esquerdo...</span>
+        <div class="wa-footer"><span class="time" id="clock">10:45</span><span class="ticks">✓✓</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let testData = {};
+  let variableRegistry = {};
+
+  const defaultExamples = {
+    "ORDER_NUMBER": "123456", "ORDER_CREATED_DATE": "14/07/2026", "ORDER_STATE": "despachado", "TYPE": "normal",
+    "SALES_CHANNEL": "Loja Online", "SALES_ORDER_NUMBER": "SP-98765", "CLIENT_NAME": "Mariele Santos",
+    "END_CUSTOMER_FIRST_NAME": "Mariele", "END_CUSTOMER_LAST_NAME": "Santos", "END_CUSTOMER_EMAIL": "mariele.santos@email.com",
+    "END_CUSTOMER_SHIPPING_ADDRESS": "Av. Paulista", "END_CUSTOMER_SHIPPING_NUMBER": "1000", "END_CUSTOMER_SHIPPING_QUARTER": "Bela Vista",
+    "END_CUSTOMER_SHIPPING_CITY": "São Paulo", "END_CUSTOMER_SHIPPING_STATE": "SP", "END_CUSTOMER_SHIPPING_ZIP_CODE": "01310-100",
+    "TRACKING_CODE": "IP-887766AA", "TRACKING_URL": "https://rastreio.intelipost.com.br/IP-887766AA", "LOGISTIC_PROVIDER_NAME": "Transportadora Rápida",
+    "DELIVERY_METHOD_NAME": "Expresso", "DELIVERY_METHOD_LOGO_URL": "https://intelipost.com.br/logo.png", "SHIPPED_DATE": "14/07/2026", "DELIVERED_DATE": "18/07/2026", "DELIVERY_ESTIMATE_LP": "18/07/2026",
+    "ESTIMATED_ORIGINAL": "17/07/2026", "ESTIMATED_ORIGINAL_LP": "17/07/2026", "ESTIMATED_DELIVERY_DATE": "17/07/2026",
+    "MACRO_STATE_NAME": "Em trânsito", "MICRO_STATE_NAME": "Saiu da filial", "EVENT_DATE": "14/07/2026", "EVENT_TIME": "15:30",
+    "EVENT_MESSAGE_LP": "O motorista está a caminho do seu endereço.", "TRACKING_LAST_EVENT_DATE": "14/07/2026", "TRACKING_LAST_EVENT_TIME": "15:30",
+    "HISTORY_HTML": "Histórico do pedido", "SENDER_NAME": "Intelipost", "SENDER": "intelipost@sender.com", "REPLY_TO": "atendimento@loja.com.br",
+    "CLIENT_ADDRESS_STREET": "Rua das Flores", "CLIENT_ADDRESS_NUMBER": "200", "CLIENT_ADDRESS_QUARTER": "Centro", "CLIENT_ADDRESS_CITY": "São Paulo",
+    "CLIENT_ADDRESS_STATE": "SP", "CLIENT_ADDRESS_ZIP_CODE": "01000-000", "ORIGIN_WAREHOUSE_NAME": "CD São Paulo", "ORIGIN_ZIP_CODE": "01000-000",
+    "SENDER_ADDRESS_STREET": "Rua das Flores", "SENDER_ADDRESS_NUMBER": "200", "SENDER_ADDRESS_QUARTER": "Centro", "SENDER_ADDRESS_CITY": "São Paulo",
+    "SENDER_ADDRESS_STATE": "SP", "SENDER_ADDRESS_ZIP_CODE": "01000-000",
+    "INVOICE_NUM": "554433", "INVOICE_SERIES": "1", "INVOICE_KEY": "35210901234567890123456789012345678901234567",
+    "IP_ACCOUNT_ID": "12345", "SUBJECT": "Atualização do seu pedido", "TO": "cliente@email.com", "CUSTOM_BODY": "Texto customizado"
+  };
+
+  const VARIABLES = [
+    { category: "Informações do Pedido e Venda", items: [
+      ["ORDER_NUMBER", "Número do Pedido"],
+      ["ORDER_CREATED_DATE", "Data de criação do pedido"],
+      ["ORDER_STATE", "Status do pedido"],
+      ["TYPE", "Tipo do pedido (normal, reenvio, reversa)"],
+      ["SALES_CHANNEL", "Canal de vendas"],
+      ["SALES_ORDER_NUMBER", "Número do Pedido de Venda (Nota: no sistema, pode constar também mapeado como 'Canal de vendas')"]
+    ]},
+    { category: "Dados do Consumidor Final (Destinatário)", items: [
+      ["CLIENT_NAME", "Nome do consumidor final"],
+      ["END_CUSTOMER_FIRST_NAME", "Primeiro nome do consumidor final"],
+      ["END_CUSTOMER_LAST_NAME", "Sobrenome do consumidor final"],
+      ["END_CUSTOMER_EMAIL", "E-mail do consumidor final"],
+      ["END_CUSTOMER_SHIPPING_ADDRESS", "Endereço do consumidor final"],
+      ["END_CUSTOMER_SHIPPING_NUMBER", "Número do endereço do destinatário"],
+      ["END_CUSTOMER_SHIPPING_QUARTER", "Bairro de destino"],
+      ["END_CUSTOMER_SHIPPING_CITY", "Cidade de destino"],
+      ["END_CUSTOMER_SHIPPING_STATE", "UF de destino"],
+      ["END_CUSTOMER_SHIPPING_ZIP_CODE", "CEP de destino"]
+    ]},
+    { category: "Dados de Entrega, Rastreamento e Transportadora", items: [
+      ["TRACKING_CODE", "Código de rastreamento do pedido"],
+      ["TRACKING_URL", "Link de rastreamento"],
+      ["LOGISTIC_PROVIDER_NAME", "Nome da transportadora"],
+      ["DELIVERY_METHOD_NAME", "Nome do método de envio"],
+      ["DELIVERY_METHOD_LOGO_URL", "Logo do método de envio"],
+      ["SHIPPED_DATE", "Data de despacho do pedido"],
+      ["DELIVERED_DATE", "Data de entrega do pedido"],
+      ["DELIVERY_ESTIMATE_LP", "Previsão de entrega da transportadora"],
+      ["ESTIMATED_ORIGINAL", "Previsão de entrega original"],
+      ["ESTIMATED_ORIGINAL_LP", "Previsão de entrega original da transportadora"],
+      ["ESTIMATED_DELIVERY_DATE", "Prazo de entrega do embarcador"],
+      ["MACRO_STATE_NAME", "Macro status de rastreamento"],
+      ["MICRO_STATE_NAME", "Micro status de rastreamento"],
+      ["EVENT_DATE", "Data do evento"],
+      ["EVENT_TIME", "Horário do evento"],
+      ["EVENT_MESSAGE_LP", "Mensagem do evento da transportadora"],
+      ["TRACKING_LAST_EVENT_DATE", "Data do último evento"],
+      ["TRACKING_LAST_EVENT_TIME", "Horário do último evento (variável separada da data)"],
+      ["HISTORY_HTML", "Histórico do rastreamento formatado em HTML"]
+    ]},
+    { category: "Dados da Loja (Remetente) e Centro de Distribuição", items: [
+      ["SENDER_NAME", "Nome da loja (quem envia o e-mail)"],
+      ["SENDER", "E-mail da loja"],
+      ["REPLY_TO", "E-mail de resposta (remetente)"],
+      ["CLIENT_ADDRESS_STREET", "Rua da loja"],
+      ["CLIENT_ADDRESS_NUMBER", "Número do endereço da loja"],
+      ["CLIENT_ADDRESS_QUARTER", "Bairro da loja"],
+      ["CLIENT_ADDRESS_CITY", "Cidade da loja"],
+      ["CLIENT_ADDRESS_STATE", "Estado da loja"],
+      ["CLIENT_ADDRESS_ZIP_CODE", "CEP da loja"],
+      ["ORIGIN_WAREHOUSE_NAME", "Nome do centro de distribuição"],
+      ["ORIGIN_ZIP_CODE", "CEP de origem"],
+      ["SENDER_ADDRESS_STREET", "Endereço do centro de distribuição / loja"],
+      ["SENDER_ADDRESS_NUMBER", "Número do endereço do centro de distribuição"],
+      ["SENDER_ADDRESS_QUARTER", "Bairro do centro de distribuição"],
+      ["SENDER_ADDRESS_CITY", "Cidade do centro de distribuição"],
+      ["SENDER_ADDRESS_STATE", "Estado do centro de distribuição"],
+      ["SENDER_ADDRESS_ZIP_CODE", "CEP do centro de distribuição"]
+    ]},
+    { category: "Dados Fiscais e Outros parâmetros", items: [
+      ["INVOICE_NUM", "Número da nota fiscal"],
+      ["INVOICE_SERIES", "Série da nota fiscal"],
+      ["INVOICE_KEY", "Chave da nota fiscal"],
+      ["IP_ACCOUNT_ID", "ID da conta na Intelipost"],
+      ["SUBJECT", "Assunto do e-mail"],
+      ["TO", "E-mail do destinatário"],
+      ["CUSTOM_BODY", "Texto customizado dentro do corpo do evento"]
+    ]}
+  ];
+
+  function renderVariableList() {
+    const container = document.getElementById('varsList');
+    container.innerHTML = '';
+    VARIABLES.forEach(group => {
+      const catBlock = document.createElement('div'); catBlock.className = 'category-block';
+      const catTitle = document.createElement('div'); catTitle.className = 'category-title'; catTitle.textContent = group.category; catBlock.appendChild(catTitle);
+      group.items.forEach(([name, desc]) => {
+        variableRegistry[name] = desc;
+        const row = document.createElement('div'); row.className = 'var-row';
+        const btnContainer = document.createElement('div'); btnContainer.className = 'var-btn-container';
+        const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'var-btn'; btn.textContent = name; btn.onclick = () => insertText('{' + name + '}');
+        btnContainer.appendChild(btn); row.appendChild(btnContainer);
+        const descEl = document.createElement('div'); descEl.className = 'var-desc'; descEl.textContent = desc;
+        row.appendChild(descEl); catBlock.appendChild(row);
+      });
+      container.appendChild(catBlock);
+    });
+  }
+
+  function insertText(text) {
+    const ta = document.getElementById('msgInput'); const start = ta.selectionStart; const end = ta.selectionEnd;
+    ta.value = ta.value.substring(0, start) + text + ta.value.substring(end); ta.focus(); ta.selectionStart = ta.selectionEnd = start + text.length;
+    updateAll();
+  }
+
+  function cleanTemplateName(input) {
+    input.value = input.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9_]/g, '_').replace(/_+/g, '_');
+  }
+
+  function formatWhatsApp(text) {
+    text = text.replace(/\n/g, '<br>'); let placeholders = [];
+    text = text.replace(/<[^>]+>/g, match => { placeholders.push(match); return '%%HTML' + (placeholders.length - 1) + '%%'; });
+    text = text.replace(/\{[A-Z0-9_]+\}/g, match => { placeholders.push(match); return '%%VAR' + (placeholders.length - 1) + '%%'; });
+    text = text.replace(/\*([^*]+)\*/g, '<strong>$1</strong>').replace(/_([^_]+)_/g, '<em>$1</em>').replace(/~([^~]+)~/g, '<del>$1</del>');
+    for (let i = placeholders.length - 1; i >= 0; i--) {
+      text = text.replace('%%HTML' + i + '%%', placeholders[i]).replace('%%VAR' + i + '%%', placeholders[i]);
+    }
+    return text;
+  }
+
+  function checkMetaViolations(text) {
+    let violations = [];
+    let trimText = text.trim();
+    let lowerText = trimText.toLowerCase();
+
+    if (/^\{[A-Z0-9_]+\}/.test(trimText)) {
+      violations.push({ rule: "Erro de Estrutura (Início com Variável)", desc: "Sua mensagem começa diretamente com uma variável. A Meta exige um texto de saudação estável no início." });
+    }
+    if (/\{[A-Z0-9_]+\}[.!?\s]*$/.test(trimText)) {
+      violations.push({ rule: "Erro de Estrutura (Fim com Variável)", desc: "Sua mensagem termina diretamente com uma variável. Adicione um ponto final ou texto estático estável depois dela." });
+    }
+
+    const blockedEmojis = ['🚀', '🤑', '🎁', '🔥'];
+    let foundEmojis = blockedEmojis.filter(emoji => text.includes(emoji));
+    if (foundEmojis.length > 0) {
+      violations.push({ rule: "Emojis de Vendas Proibidos", desc: "Identificamos os emojis: " + foundEmojis.join(' ') + ". Use apenas ícones funcionais e logísticos como 📦, 🚚, ✅." });
+    }
+
+    const textRules = [
+      { rule: "Mensagem de Marketing (Promocional / Reengajamento)",
+        words: ['cupom', 'desconto', 'promoção', 'promocao', 'oferta', 'lançamento', 'lancamento', 'compre', 'exclusivo', 'novidade', 'ganhe', 'brinde', 'promo', 'liquidação', 'liquidacao', 'imperdível', 'imperdivel', 'promocionais', 'ofertas', 'novidades', 'reengajamento'],
+        desc: "Evite tom persuasivo, comercial ou tentativas de reengajar vendas. O rastreio deve ser puramente transacional." },
+      { rule: "Saudação Excessiva / Floreios Informais",
+        words: ['espero que', 'maravilhoso', 'maravilhosa', 'excelente dia', 'esteja sendo', 'esteja tendo', 'como vai', 'tudo bem', 'tudo bom', 'passando para desejar'],
+        desc: "" },
+      { rule: "Urgência Artificial",
+        words: ['corra para', 'última chance', 'ultima chance', 'garanta já', 'garanta ja', 'não perca', 'nao perca', 'aproveite antes que', 'corra para garantir'],
+        desc: "Evite termos que incentivem pressa de consumo ou apelo comercial." },
+      { rule: "Interrogação de Engajamento / Pesquisas",
+        words: ['o que achou', 'o que voce achou', 'o que você achou', 'sua opinião', 'sua opiniao', 'nos avalie', 'pesquisa', 'feedback', 'gostou da nossa loja', 'gostou de', 'gostou da', 'avaliação', 'avaliacao'],
+        desc: "Nunca solicite feedbacks ou faça pesquisas de satisfação em mensagens logísticas de atualização de rastreio." }
+    ];
+
+    textRules.forEach(category => {
+      let foundWords = category.words.filter(w => lowerText.includes(w));
+      if (foundWords.length > 0) {
+        let descText = category.desc ? category.desc + ` (Termo identificado: "<strong>${foundWords.join(', ')}</strong>")` : `(Termo identificado: "<strong>${foundWords.join(', ')}</strong>")`;
+        violations.push({ rule: category.rule, desc: descText });
+      }
+    });
+
+    return violations;
+  }
+
+  function updateAll() {
+    const alertBox = document.getElementById('alertBox'); alertBox.style.display = 'none';
+    let rawText = document.getElementById('msgInput').value;
+
+    let warningBox = document.getElementById('marketingWarning');
+    let btnSubmit = document.getElementById('btnSubmit');
+
+    if (rawText.trim() !== '') {
+      let violations = checkMetaViolations(rawText);
+      if (violations.length > 0) {
+        let html = `<strong>⛔ ERRO: Ajuste os pontos abaixo para enviar para homologação</strong><ul>`;
+        violations.forEach(v => { html += `<li><strong>${v.rule}:</strong> ${v.desc}</li>`; });
+        html += `</ul>`;
+        warningBox.innerHTML = html;
+        warningBox.style.display = 'block';
+        btnSubmit.disabled = true;
+        btnSubmit.innerText = "⚠️ Mensagem Bloqueada pelas Diretrizes da Meta";
+      } else {
+        warningBox.style.display = 'none';
+        btnSubmit.disabled = false;
+        btnSubmit.innerText = "🟢 Concordar e Enviar para Intelipost";
+      }
+    } else {
+      warningBox.style.display = 'none';
+      btnSubmit.disabled = false;
+      btnSubmit.innerText = "🟢 Concordar e Enviar para Intelipost";
+    }
+
+    const regex = /\{([A-Z0-9_]+)\}/g; let match; let foundVars = new Set();
+    while ((match = regex.exec(rawText)) !== null) {
+      let varName = match[1]; foundVars.add(varName);
+      if (testData[varName] === undefined) testData[varName] = defaultExamples[varName] || "Exemplo";
+    }
+
+    const testArea = document.getElementById('testAreaContainer'); const testInputs = document.getElementById('testInputs');
+    if (foundVars.size > 0) {
+      testArea.style.display = 'block'; let currentHTML = '';
+      foundVars.forEach(v => {
+        let val = testData[v] || ''; let descText = variableRegistry[v] || 'Variável do sistema';
+        currentHTML += `<div class="input-row"><span>{${v}} <span style="font-weight:normal; color:#475569; font-size:11px;">— ${descText}</span></span><input type="text" value="${val}" oninput="updateData('${v}', this.value)"></div>`;
+      });
+      testInputs.innerHTML = currentHTML;
+    } else { testArea.style.display = 'none'; }
+    renderPreview(rawText, foundVars);
+  }
+
+  function updateData(variable, value) {
+    testData[variable] = value; let rawText = document.getElementById('msgInput').value;
+    const regex = /\{([A-Z0-9_]+)\}/g; let match; let foundVars = new Set();
+    while ((match = regex.exec(rawText)) !== null) foundVars.add(match[1]);
+    renderPreview(rawText, foundVars);
+  }
+
+  function renderPreview(text, foundVars) {
+    let previewText = text;
+    foundVars.forEach(v => {
+      let r = new RegExp('\\{' + v + '\\}', 'g'); let val = testData[v];
+      previewText = previewText.replace(r, (val && val.trim() !== '') ? `<span class="var-highlight">${val}</span>` : `<span style="color:#0B57D0; font-family:'Roboto Mono'; font-weight:bold;">{${v}}</span>`);
+    });
+    if (previewText.trim() === '') previewText = 'Comece a digitar no lado esquerdo...';
+    document.getElementById('waText').innerHTML = formatWhatsApp(previewText);
+  }
+
+  function encodeFormData(data) {
+    return Object.keys(data).map(key => encodeURIComponent(key) + "=" + encodeURIComponent(data[key])).join("&");
+  }
+
+  function submitTemplate() {
+    const clientName = document.getElementById('clientName').value.trim();
+    const clientEmail = document.getElementById('clientEmail').value.trim();
+    const analystName = document.getElementById('analystName').value;
+    const whatsappStatus = document.getElementById('whatsappStatus').value.trim();
+    const templateText = document.getElementById('msgInput').value.trim();
+    const btn = document.getElementById('btnSubmit'); const alertBox = document.getElementById('alertBox');
+
+    if (!clientName || !clientEmail || !analystName || !whatsappStatus || !templateText) {
+      alertBox.className = "alert-box alert-error"; alertBox.innerText = "⚠️ Por favor, preencha todos os campos do formulário!"; alertBox.style.display = 'block'; return;
+    }
+
+    btn.disabled = true; btn.innerText = "Enviando aprovação..."; alertBox.style.display = "none";
+
+    const payload = {
+      "form-name": "template-whatsapp",
+      clientName, clientEmail, analystName, whatsappStatus, templateText
+    };
+
+    fetch("/", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: encodeFormData(payload)
+    })
+    .then(() => {
+      alertBox.className = "alert-box alert-success";
+      alertBox.innerText = "🎉 Sucesso! Seu template foi enviado para a equipe de implantação da Intelipost.";
+      alertBox.style.display = 'block';
+      document.getElementById('clientName').value = ""; document.getElementById('clientEmail').value = "";
+      document.getElementById('analystName').value = ""; document.getElementById('whatsappStatus').value = "";
+      document.getElementById('msgInput').value = ""; testData = {}; updateAll();
+      btn.disabled = false; btn.innerText = "🟢 Concordar e Enviar para Intelipost";
+    })
+    .catch((err) => {
+      btn.disabled = false; btn.innerText = "🟢 Concordar e Enviar para Intelipost";
+      alertBox.className = "alert-box alert-error"; alertBox.innerText = "❌ Erro de conexão: " + err; alertBox.style.display = 'block';
+    });
+  }
+
+  setInterval(() => { let now = new Date(); document.getElementById('clock').innerText = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0'); }, 1000);
+  document.getElementById('msgInput').addEventListener('input', updateAll);
+
+  renderVariableList();
+  updateAll();
+</script>
+</body>
+</html>
