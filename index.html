@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Montador de Templates WhatsApp — Intelipost</title>
+<title>Simulador de Mensagens WhatsApp — Intelipost</title>
 <style>
   :root{
     --green:#00A859;
@@ -100,25 +100,23 @@
   .details-content td strong{color:var(--green);}
   .correct-badge{background:#e8f5e9; color:#2e7d32; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:10px;}
   .incorrect-badge{background:#ffebee; color:#c62828; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:10px;}
+
+  .template-box{background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; padding:12px; font-size:13px; line-height:1.5; white-space:pre-wrap; color:#1e293b; font-family:inherit; margin-bottom:10px;}
+  .btn-use-template{background-color:#e3f2fd; color:#0B57D0; border:1px solid #90caf9; padding:8px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:bold; width:100%; transition:0.2s;}
+  .btn-use-template:hover{background-color:#0B57D0; color:white;}
+
+  #successScreen{display:none; justify-content:center; align-items:center; min-height:60vh; width:100%;}
+  .success-card{background:white; padding:40px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1); text-align:center; max-width:450px; border-top:6px solid var(--green); width:100%;}
 </style>
 </head>
 <body>
 
-<!-- Formulário oculto para o Netlify detectar no build (Netlify Forms) -->
-<form name="template-whatsapp" data-netlify="true" data-netlify-honeypot="bot-field" hidden>
-  <input type="text" name="clientName" />
-  <input type="email" name="clientEmail" />
-  <input type="text" name="analystName" />
-  <input type="text" name="whatsappStatus" />
-  <textarea name="templateText"></textarea>
-</form>
-
-<div class="container">
+<div class="container" id="mainContainer">
   <div class="editor-section">
-    <h2>Montador de Templates - Intelipost</h2>
+    <h2>Simulador de Mensagens WhatsApp - Intelipost</h2>
 
     <label>1. Clique na variável para inserir:</label>
-    <div class="vars-container" id="varsList"><span style="color:#888; font-style:italic;">Carregando variáveis...</span></div>
+    <div class="vars-container" id="varsList"></div>
 
     <label>2. Escreva a sua mensagem:</label>
     <textarea id="msgInput" placeholder="Ex: Olá {END_CUSTOMER_FIRST_NAME}! O seu pedido {ORDER_NUMBER} já está com a transportadora."></textarea>
@@ -175,12 +173,109 @@
 
       <div class="form-group">
         <label style="margin:0 0 5px 0;">Status a ser usado no WhatsApp:</label>
-        <input type="text" id="whatsappStatus" placeholder="Ex: despachado" oninput="cleanTemplateName(this)" required>
-        <div class="form-help">Apenas letras minúsculas, números e sublinhados (_). Sem espaços ou acentos.</div>
+        <select id="whatsappStatus" required>
+          <option value="">Selecione o status...</option>
+          <option value="criado">Criado</option>
+          <option value="despachado">Despachado</option>
+          <option value="em_transito">Em trânsito</option>
+          <option value="saiu_para_entrega">Saiu para Entrega</option>
+          <option value="entregue">Entregue</option>
+          <option value="cancelado">Cancelado</option>
+          <option value="falha_na_entrega">Falha na Entrega</option>
+          <option value="averiguar_falha_na_entrega">Averiguar falha na Entrega</option>
+        </select>
       </div>
 
-      <button id="btnSubmit" class="btn-submit" onclick="submitTemplate()" type="button">🟢 Concordar e Enviar para Intelipost</button>
+      <button id="btnSubmit" class="btn-submit" onclick="submitTemplate()" type="button">Enviar formulário</button>
       <div id="alertBox" class="alert-box"></div>
+    </div>
+
+    <div class="guide-card">
+      <h3 class="guide-title">💬 Sugestões de Templates Prontos</h3>
+
+      <div class="info-alert-box" style="background-color:#fff3cd; border-left-color:#ffc107; color:#856404; font-size:12px; margin-bottom:12px;">
+        <strong>Termo de Responsabilidade:</strong> É de suma importância que o embarcador se enquadre na política do WhatsApp para utilização do mesmo, caso contrário o Grupo Intelipost se isenta de qualquer responsabilidade de não aprovação do mesmo junto ao Facebook. É imprescindível que o embarcador siga o modelo de mensagem do META. A mensagem estará sujeita à aprovação do provedor. O registro da categoria de mensagem será feito apenas para fins de utilidade.
+      </div>
+
+      <details open>
+        <summary>1. CRIADO</summary>
+        <div class="details-content">
+          <div class="template-box" id="tpl1">✅ Faturado
+Seu pedido foi faturado com sucesso! 🧾✨
+Em breve ele será despachado com todo cuidado.
+
+Este canal é de mensagens automáticas, não responda.
+📞 Para mais informações, entre em contato com nosso SAC: (11) 99999-9999 ou WhatsApp clicando aqui 👉 https://link.com.br/9999</div>
+          <button type="button" class="btn-use-template" onclick="useTemplate('tpl1')">Copiar e Usar este Template</button>
+        </div>
+      </details>
+
+      <details>
+        <summary>2. DESPACHADO</summary>
+        <div class="details-content">
+          <div class="template-box" id="tpl2">Olá, {END_CUSTOMER_FIRST_NAME}.
+O pedido {ORDER_NUMBER} está aguardando ser coletado pela transportadora.
+Link de rastreamento: {TRACKING_URL}
+
+Fique atento às notificações para acompanhar cada etapa da sua compra!
+
+📞 Em caso de dúvidas, fale com nosso SAC: (11) 99999-9999 ou WhatsApp clicando aqui 👉 https://link.com.br/9999</div>
+          <button type="button" class="btn-use-template" onclick="useTemplate('tpl2')">Copiar e Usar este Template</button>
+        </div>
+      </details>
+
+      <details>
+        <summary>3. EM TRÂNSITO</summary>
+        <div class="details-content">
+          <div class="template-box" id="tpl3">🚚 Em Trânsito
+Seu pedido está a caminho! 📦💨
+Link de rastreamento: {TRACKING_URL}
+Logo logo ele chega até você.
+
+Este canal é de mensagens automáticas, não responda.
+📞 Em caso de dúvidas, fale com nosso SAC: (11) 99999-9999 ou WhatsApp clicando aqui 👉 https://link.com.br/9999</div>
+          <button type="button" class="btn-use-template" onclick="useTemplate('tpl3')">Copiar e Usar este Template</button>
+        </div>
+      </details>
+
+      <details>
+        <summary>4. SAIU PARA ENTREGA</summary>
+        <div class="details-content">
+          <div class="template-box" id="tpl4">📬 Saiu para Entrega
+É hoje! 😍 Seu pedido saiu para entrega e está quase aí!
+Fique atento ao endereço informado.
+
+Este canal é de mensagens automáticas, não responda.
+📞 Qualquer dúvida, nosso SAC atende no (11) 99999-9999 ou WhatsApp clicando aqui 👉 https://link.com.br/9999</div>
+          <button type="button" class="btn-use-template" onclick="useTemplate('tpl4')">Copiar e Usar este Template</button>
+        </div>
+      </details>
+
+      <details>
+        <summary>5. FALHA NA ENTREGA</summary>
+        <div class="details-content">
+          <div class="template-box" id="tpl5">⚠️ Falha na Entrega
+Ops! 😟 Houve uma tentativa de entrega, mas não conseguimos concluir.
+Vamos tentar novamente em breve.
+
+Este canal é de mensagens automáticas, não responda.
+📞 Para suporte, entre em contato com o SAC: (11) 99999-9999 ou WhatsApp clicando aqui 👉 https://link.com.br/9999</div>
+          <button type="button" class="btn-use-template" onclick="useTemplate('tpl5')">Copiar e Usar este Template</button>
+        </div>
+      </details>
+
+      <details>
+        <summary>6. ENTREGUE</summary>
+        <div class="details-content">
+          <div class="template-box" id="tpl6">🎉 Entregue
+Pedido entregue com sucesso! 🙌💚
+Esperamos que você aproveite muito sua compra!
+
+Este canal é de mensagens automáticas, não responda.
+📞 Se precisar de qualquer coisa, fale com o SAC: (11) 99999-9999 ou WhatsApp clicando aqui 👉 https://link.com.br/9999</div>
+          <button type="button" class="btn-use-template" onclick="useTemplate('tpl6')">Copiar e Usar este Template</button>
+        </div>
+      </details>
     </div>
 
     <div class="guide-card">
@@ -189,7 +284,7 @@
         <summary>🔍 O que é Utilidade (Utility) vs. Marketing?</summary>
         <div class="details-content">
           No ecossistema da Meta, a intenção da mensagem define sua categoria e seu custo.<br><br>
-          <strong>🟢 Utilidade (Utility):</strong> Mensagens que facilitam transações ou atualizações confirmadas. No contexto logístico da Intelipost, são notificações sobre o andamento do pedido (ex: despacho, previsão de entrega). O tom deve ser neutro e direto.<br><br>
+          <strong>🟢 Utilidade (Utility):</strong> Mensagens que facilitam transações ou updates confirmados. No contexto logístico da Intelipost, são notificações sobre o andamento do pedido (ex: despacho, previsão de entrega). O tom deve ser neutro e direto.<br><br>
           <strong>🔴 Marketing:</strong> Mensagens promocionais, ofertas, novidades ou tentativas de reengajamento. O tom é persuasivo e estimulante.
         </div>
       </details>
@@ -248,6 +343,18 @@
   </div>
 </div>
 
+<div id="successScreen">
+  <div class="success-card">
+    <h2 style="color:var(--green); margin-top:0; font-size:24px;">✓ Formulário enviado com sucesso!</h2>
+    <p style="color:#4a5568; font-size:15px; line-height:1.6; margin-bottom:0;">
+      Seu template foi registrado e enviado para a equipe de implantação da Intelipost.
+    </p>
+    <p style="color:#718096; font-size:12px; margin-top:20px; font-style:italic;">
+      O formulário será reiniciado automaticamente em instantes...
+    </p>
+  </div>
+</div>
+
 <script>
   let testData = {};
   let variableRegistry = {};
@@ -255,7 +362,7 @@
   const defaultExamples = {
     "ORDER_NUMBER": "123456", "ORDER_CREATED_DATE": "14/07/2026", "ORDER_STATE": "despachado", "TYPE": "normal",
     "SALES_CHANNEL": "Loja Online", "SALES_ORDER_NUMBER": "SP-98765", "CLIENT_NAME": "Mariele Santos",
-    "END_CUSTOMER_FIRST_NAME": "Mariele", "END_CUSTOMER_LAST_NAME": "Santos", "END_CUSTOMER_EMAIL": "mariele.santos@email.com",
+    "END_CUSTOMER_FIRST_NAME": "João", "END_CUSTOMER_LAST_NAME": "Silva", "END_CUSTOMER_EMAIL": "joao.silva@email.com",
     "END_CUSTOMER_SHIPPING_ADDRESS": "Av. Paulista", "END_CUSTOMER_SHIPPING_NUMBER": "1000", "END_CUSTOMER_SHIPPING_QUARTER": "Bela Vista",
     "END_CUSTOMER_SHIPPING_CITY": "São Paulo", "END_CUSTOMER_SHIPPING_STATE": "SP", "END_CUSTOMER_SHIPPING_ZIP_CODE": "01310-100",
     "TRACKING_CODE": "IP-887766AA", "TRACKING_URL": "https://rastreio.intelipost.com.br/IP-887766AA", "LOGISTIC_PROVIDER_NAME": "Transportadora Rápida",
@@ -369,8 +476,11 @@
     updateAll();
   }
 
-  function cleanTemplateName(input) {
-    input.value = input.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9_]/g, '_').replace(/_+/g, '_');
+  function useTemplate(templateId) {
+    const text = document.getElementById(templateId).innerText;
+    document.getElementById('msgInput').value = text;
+    updateAll();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function formatWhatsApp(text) {
@@ -448,12 +558,12 @@
       } else {
         warningBox.style.display = 'none';
         btnSubmit.disabled = false;
-        btnSubmit.innerText = "🟢 Concordar e Enviar para Intelipost";
+        btnSubmit.innerText = "Enviar formulário";
       }
     } else {
       warningBox.style.display = 'none';
       btnSubmit.disabled = false;
-      btnSubmit.innerText = "🟢 Concordar e Enviar para Intelipost";
+      btnSubmit.innerText = "Enviar formulário";
     }
 
     const regex = /\{([A-Z0-9_]+)\}/g; let match; let foundVars = new Set();
@@ -491,15 +601,11 @@
     document.getElementById('waText').innerHTML = formatWhatsApp(previewText);
   }
 
-  function encodeFormData(data) {
-    return Object.keys(data).map(key => encodeURIComponent(key) + "=" + encodeURIComponent(data[key])).join("&");
-  }
-
   function submitTemplate() {
     const clientName = document.getElementById('clientName').value.trim();
     const clientEmail = document.getElementById('clientEmail').value.trim();
     const analystName = document.getElementById('analystName').value;
-    const whatsappStatus = document.getElementById('whatsappStatus').value.trim();
+    const whatsappStatus = document.getElementById('whatsappStatus').value;
     const templateText = document.getElementById('msgInput').value.trim();
     const btn = document.getElementById('btnSubmit'); const alertBox = document.getElementById('alertBox');
 
@@ -509,29 +615,38 @@
 
     btn.disabled = true; btn.innerText = "Enviando aprovação..."; alertBox.style.display = "none";
 
-    const payload = {
-      "form-name": "template-whatsapp",
-      clientName, clientEmail, analystName, whatsappStatus, templateText
-    };
-
-    fetch("/", {
+    fetch("/.netlify/functions/submit-template", {
       method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: encodeFormData(payload)
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ clientName, clientEmail, analystName, whatsappStatus, templateText })
     })
-    .then(() => {
-      alertBox.className = "alert-box alert-success";
-      alertBox.innerText = "🎉 Sucesso! Seu template foi enviado para a equipe de implantação da Intelipost.";
-      alertBox.style.display = 'block';
-      document.getElementById('clientName').value = ""; document.getElementById('clientEmail').value = "";
-      document.getElementById('analystName').value = ""; document.getElementById('whatsappStatus').value = "";
-      document.getElementById('msgInput').value = ""; testData = {}; updateAll();
-      btn.disabled = false; btn.innerText = "🟢 Concordar e Enviar para Intelipost";
-    })
-    .catch((err) => {
-      btn.disabled = false; btn.innerText = "🟢 Concordar e Enviar para Intelipost";
-      alertBox.className = "alert-box alert-error"; alertBox.innerText = "❌ Erro de conexão: " + err; alertBox.style.display = 'block';
-    });
+      .then(res => res.json().then(data => ({ ok: res.ok, data })))
+      .then(({ ok, data }) => {
+        if (ok && data.success) {
+          document.getElementById('mainContainer').style.display = 'none';
+          document.getElementById('successScreen').style.display = 'flex';
+
+          setTimeout(function () {
+            document.getElementById('clientName').value = "";
+            document.getElementById('clientEmail').value = "";
+            document.getElementById('analystName').value = "";
+            document.getElementById('whatsappStatus').value = "";
+            document.getElementById('msgInput').value = "";
+            testData = {}; updateAll();
+            btn.disabled = false; btn.innerText = "Enviar formulário";
+
+            document.getElementById('successScreen').style.display = 'none';
+            document.getElementById('mainContainer').style.display = 'flex';
+          }, 4000);
+        } else {
+          btn.disabled = false; btn.innerText = "Enviar formulário";
+          alertBox.className = "alert-box alert-error"; alertBox.innerText = "❌ Erro no envio: " + (data.error || "erro desconhecido"); alertBox.style.display = 'block';
+        }
+      })
+      .catch((err) => {
+        btn.disabled = false; btn.innerText = "Enviar formulário";
+        alertBox.className = "alert-box alert-error"; alertBox.innerText = "❌ Erro de conexão: " + err; alertBox.style.display = 'block';
+      });
   }
 
   setInterval(() => { let now = new Date(); document.getElementById('clock').innerText = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0'); }, 1000);
