@@ -115,81 +115,6 @@
   <div class="editor-section">
     <h2>Simulador de Mensagens WhatsApp - Intelipost</h2>
 
-    <label>1. Clique na variável para inserir:</label>
-    <div class="vars-container" id="varsList"></div>
-
-    <label>2. Escreva a sua mensagem:</label>
-    <textarea id="msgInput" placeholder="Ex: Olá {END_CUSTOMER_FIRST_NAME}! O seu pedido {ORDER_NUMBER} já está com a transportadora."></textarea>
-
-    <div id="marketingWarning" class="marketing-warning"></div>
-
-    <div id="testAreaContainer" style="display:none; margin-top:15px;">
-      <label>3. Preencha os dados reais para simulação:</label>
-      <div class="test-inputs" id="testInputs"></div>
-    </div>
-
-    <div class="form-card">
-      <h3>📋 Informações para Homologação</h3>
-
-      <div class="info-alert-box">
-        <strong>⚠️ Importante para o Envio:</strong> Se você for configurar múltiplos status (ex: <em>despachado</em>, <em>saiu_para_entrega</em>, etc.), é necessário preencher e realizar <strong>um envio de formulário separado para cada status</strong>.
-      </div>
-
-      <div class="form-group">
-        <label style="margin:0 0 5px 0;">Nome da Empresa e Nome Completo:</label>
-        <input type="text" id="clientName" placeholder="Ex: Empresa 1 - João Silva" required>
-      </div>
-
-      <div class="form-group">
-        <label style="margin:0 0 5px 0;">Seu E-mail (Para receber uma cópia do template):</label>
-        <input type="email" id="clientEmail" placeholder="Ex: joao@empresa.com.br" required>
-      </div>
-
-      <div class="form-group">
-        <label style="margin:0 0 5px 0;">Analista Intelipost Responsável:</label>
-        <select id="analystName" required>
-          <option value="">Selecione o seu analista...</option>
-          <option value="Mariele Santos">Mariele Santos</option>
-          <option value="Alexandre Jesus">Alexandre Jesus</option>
-          <option value="Anderson Demetrio">Anderson Demetrio</option>
-          <option value="Marina Beatriz">Marina Beatriz</option>
-          <option value="Renato Mansini">Renato Mansini</option>
-          <option value="Larissa Amaral">Larissa Amaral</option>
-          <option value="Red Junior">Red Junior</option>
-          <option value="Kamily Santos">Kamily Santos</option>
-          <option value="Nathália Goulart">Nathália Goulart</option>
-          <option value="Nathy Louise">Nathy Louise</option>
-          <option value="Luana Santos">Luana Santos</option>
-          <option value="Dayane Costa">Dayane Costa</option>
-          <option value="Débora Santos">Débora Santos</option>
-          <option value="Douglas Cursino">Douglas Cursino</option>
-          <option value="Eduardo Barbosa">Eduardo Barbosa</option>
-          <option value="Greice Santos">Greice Santos</option>
-          <option value="Juliana Fernandes">Juliana Fernandes</option>
-          <option value="Lucas Stanley">Lucas Stanley</option>
-          <option value="Wellington Silva">Wellington Silva</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label style="margin:0 0 5px 0;">Status a ser usado no WhatsApp:</label>
-        <select id="whatsappStatus" required>
-          <option value="">Selecione o status...</option>
-          <option value="criado">Criado</option>
-          <option value="despachado">Despachado</option>
-          <option value="em_transito">Em trânsito</option>
-          <option value="saiu_para_entrega">Saiu para Entrega</option>
-          <option value="entregue">Entregue</option>
-          <option value="cancelado">Cancelado</option>
-          <option value="falha_na_entrega">Falha na Entrega</option>
-          <option value="averiguar_falha_na_entrega">Averiguar falha na Entrega</option>
-        </select>
-      </div>
-
-      <button id="btnSubmit" class="btn-submit" onclick="submitTemplate()" type="button">Enviar formulário</button>
-      <div id="alertBox" class="alert-box"></div>
-    </div>
-
     <div class="guide-card">
       <h3 class="guide-title">💬 Sugestões de Templates Prontos</h3>
 
@@ -276,6 +201,81 @@ Este canal é de mensagens automáticas, não responda.
           <button type="button" class="btn-use-template" onclick="useTemplate('tpl6')">Copiar e Usar este Template</button>
         </div>
       </details>
+    </div>
+
+    <label>1. Clique na variável para inserir:</label>
+    <div class="vars-container" id="varsList"></div>
+
+    <label>2. Escreva a sua mensagem:</label>
+    <textarea id="msgInput" placeholder="Ex: Olá {END_CUSTOMER_FIRST_NAME}! O seu pedido {ORDER_NUMBER} já está com a transportadora."></textarea>
+
+    <div id="marketingWarning" class="marketing-warning"></div>
+
+    <div id="testAreaContainer" style="display:none; margin-top:15px;">
+      <label>3. Preencha os dados reais para simulação:</label>
+      <div class="test-inputs" id="testInputs"></div>
+    </div>
+
+    <div class="form-card">
+      <h3>📋 Informações para Homologação</h3>
+
+      <div class="info-alert-box">
+        <strong>⚠️ Importante para o Envio:</strong> Se você for configurar múltiplos status (ex: <em>despachado</em>, <em>saiu_para_entrega</em>, etc.), é necessário preencher e realizar <strong>um envio de formulário separado para cada status</strong>.
+      </div>
+
+      <div class="form-group">
+        <label style="margin:0 0 5px 0;">Nome da Empresa e Nome Completo:</label>
+        <input type="text" id="clientName" placeholder="Ex: Empresa 1 - João Silva" required>
+      </div>
+
+      <div class="form-group">
+        <label style="margin:0 0 5px 0;">Seu E-mail (Para receber uma cópia do template):</label>
+        <input type="email" id="clientEmail" placeholder="Ex: joao@empresa.com.br" required>
+      </div>
+
+      <div class="form-group">
+        <label style="margin:0 0 5px 0;">Analista Intelipost Responsável:</label>
+        <select id="analystName" required>
+          <option value="">Selecione o seu analista...</option>
+          <option value="Mariele Santos">Mariele Santos</option>
+          <option value="Alexandre Jesus">Alexandre Jesus</option>
+          <option value="Anderson Demetrio">Anderson Demetrio</option>
+          <option value="Marina Beatriz">Marina Beatriz</option>
+          <option value="Renato Mansini">Renato Mansini</option>
+          <option value="Larissa Amaral">Larissa Amaral</option>
+          <option value="Red Junior">Red Junior</option>
+          <option value="Kamily Santos">Kamily Santos</option>
+          <option value="Nathália Goulart">Nathália Goulart</option>
+          <option value="Nathy Louise">Nathy Louise</option>
+          <option value="Luana Santos">Luana Santos</option>
+          <option value="Dayane Costa">Dayane Costa</option>
+          <option value="Débora Santos">Débora Santos</option>
+          <option value="Douglas Cursino">Douglas Cursino</option>
+          <option value="Eduardo Barbosa">Eduardo Barbosa</option>
+          <option value="Greice Santos">Greice Santos</option>
+          <option value="Juliana Fernandes">Juliana Fernandes</option>
+          <option value="Lucas Stanley">Lucas Stanley</option>
+          <option value="Wellington Silva">Wellington Silva</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label style="margin:0 0 5px 0;">Status a ser usado no WhatsApp:</label>
+        <select id="whatsappStatus" required>
+          <option value="">Selecione o status...</option>
+          <option value="criado">Criado</option>
+          <option value="despachado">Despachado</option>
+          <option value="em_transito">Em trânsito</option>
+          <option value="saiu_para_entrega">Saiu para Entrega</option>
+          <option value="entregue">Entregue</option>
+          <option value="cancelado">Cancelado</option>
+          <option value="falha_na_entrega">Falha na Entrega</option>
+          <option value="averiguar_falha_na_entrega">Averiguar falha na Entrega</option>
+        </select>
+      </div>
+
+      <button id="btnSubmit" class="btn-submit" onclick="submitTemplate()" type="button">Enviar formulário</button>
+      <div id="alertBox" class="alert-box"></div>
     </div>
 
     <div class="guide-card">

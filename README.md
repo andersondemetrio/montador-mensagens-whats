@@ -38,6 +38,45 @@ Ela fica só no servidor, como variável de ambiente.
 Se quiser trocar de canal no futuro, é só atualizar essa variável de
 ambiente no Netlify — não precisa mexer no código.
 
+## Envio de e-mail (grátis, via Gmail)
+
+Além de postar no Slack, a mesma function agora também envia e-mail: uma
+cópia para o **analista responsável** (mapeado em `analystEmails`, dentro de
+`submit-template.js` — o mesmo mapeamento que a Mari usava no Google Apps
+Script) e uma cópia de confirmação para o **cliente**.
+
+Isso é feito com **Nodemailer + Gmail SMTP**, que é 100% gratuito (não é
+nenhum serviço pago tipo SendGrid/Resend) — só precisa de uma conta Google
+com **Verificação em duas etapas** ativada e uma **Senha de app**.
+
+### Passo a passo
+
+1. Na conta Gmail/Google Workspace que vai disparar os e-mails (ex: uma
+   conta compartilhada tipo `homologacao@intelipost.com.br`), ative a
+   **Verificação em duas etapas**: https://myaccount.google.com/security
+2. Gere uma **Senha de app**: https://myaccount.google.com/apppasswords
+   (escolha "Outro" e dê um nome, ex: "Montador WhatsApp")
+3. No painel do site no Netlify: **Site configuration → Environment
+   variables → Add a variable**, crie duas variáveis:
+   - **Key:** `GMAIL_USER` — **Value:** o e-mail completo da conta (ex:
+     `homologacao@intelipost.com.br`)
+   - **Key:** `GMAIL_APP_PASSWORD` — **Value:** a senha de app gerada no
+     passo 2 (16 caracteres, sem espaços)
+4. Ajuste os e-mails de cada analista dentro do objeto `analystEmails` em
+   `netlify/functions/submit-template.js` para os endereços reais
+5. Clique em **Deploy** novamente (ou "Trigger deploy")
+
+Se `GMAIL_USER`/`GMAIL_APP_PASSWORD` não estiverem configuradas, o envio de
+e-mail simplesmente é pulado — o post no Slack continua funcionando
+normalmente, então não tem risco de quebrar nada em produção enquanto isso
+não for configurado.
+
+**Se o Google Workspace da empresa bloquear o uso de Senha de app** (alguns
+admins de Workspace desativam essa opção por política de segurança), a
+alternativa gratuita mais simples é o [Resend](https://resend.com/) (100
+e-mails/dia grátis, sem cartão de crédito) — nesse caso me avisem que eu
+adapto a function pra usar a API deles no lugar do SMTP do Gmail.
+
 ## Como publicar no Netlify
 
 Como agora o projeto tem uma Netlify Function, o deploy precisa ser via

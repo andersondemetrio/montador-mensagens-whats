@@ -1,6 +1,89 @@
-// Netlify Function — recebe o formulário do site e envia para o Slack via
-// Incoming Webhook. A URL do webhook fica só aqui no servidor (variável de
-// ambiente SLACK_WEBHOOK_URL), nunca exposta no HTML/JS do navegador.
+// Netlify Function — recebe o formulário do site e:
+//  1) posta no Slack via Incoming Webhook
+//  2) envia e-mail (analista responsável + cópia para o cliente) via Gmail SMTP
+//
+// Tanto a URL do webhook quanto as credenciais de e-mail ficam só aqui no
+// servidor (variáveis de ambiente), nunca expostas no HTML/JS do navegador.
+
+const nodemailer = require("nodemailer");
+
+// Mesmo mapeamento que a Mari fez no Apps Script (analystEmails), só que
+// agora vivendo aqui no servidor da Netlify Function.
+const analystEmails = {
+  "Mariele Santos": "mariele.santos@intelipost.com.br",
+  "Alexandre Jesus": "alexandre.jesus@intelipost.com.br",
+  "Anderson Demetrio": "anderson.demetrio@intelipost.com.br",
+  "Marina Beatriz": "marina.beatriz@intelipost.com.br",
+  "Renato Mansini": "renato.mansini@intelipost.com.br",
+  "Larissa Amaral": "larissa.amaral@intelipost.com.br",
+  "Red Junior": "red.junior@intelipost.com.br",
+  "Kamily Santos": "kamily.santos@intelipost.com.br",
+  "Nathália Goulart": "nathalia.goulart@intelipost.com.br",
+  "Nathy Louise": "nathy.louise@intelipost.com.br",
+  "Luana Santos": "luana.santos@intelipost.com.br",
+  "Dayane Costa": "dayane.costa@intelipost.com.br",
+  "Débora Santos": "debora.santos@intelipost.com.br",
+  "Douglas Cursino": "douglas.cursino@intelipost.com.br",
+  "Eduardo Barbosa": "eduardo.barbosa@intelipost.com.br",
+  "Greice Santos": "greice.santos@intelipost.com.br",
+  "Juliana Fernandes": "juliana.fernandes@intelipost.com.br",
+  "Lucas Stanley": "lucas.stanley@intelipost.com.br",
+  "Wellington Silva": "wellington.silva@intelipost.com.br",
+};
+
+// Ajuste os e-mails acima para os endereços reais de cada analista.
+
+async function sendNotificationEmail(data) {
+  const gmailUser = process.env.GMAIL_USER;
+  const gmailAppPassword = process.env.GMAIL_APP_PASSWORD;
+
+  // Se as credenciais não estiverem configuradas, simplesmente pula o
+  // envio de e-mail (o post no Slack continua funcionando normalmente).
+  if (!gmailUser || !gmailAppPassword) {
+    return { skipped: true, reason: "GMAIL_USER/GMAIL_APP_PASSWORD não configurados." };
+  }
+
+  const { clientName, clientEmail, analystName, whatsappStatus, templateText } = data;
+  const analystEmail = analystEmails[analystName] || gmailUser;
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: { user: gmailUser, pass: gmailAppPassword },
+  });
+
+  const subject = `Novo Template de WhatsApp - Cliente: ${clientName}`;
+  const bodyHtml =
+    `Olá,<br><br>` +
+    `Um novo template de WhatsApp foi submetido na nossa base!<br><br>` +
+    `<strong>Empresa / Cliente:</strong> ${clientName}<br>` +
+    `<strong>E-mail do cliente:</strong> ${clientEmail}<br>` +
+    `<strong>Analista responsável:</strong> ${analystName}<br>` +
+    `<strong>Status WhatsApp:</strong> ${whatsappStatus}<br><br>` +
+    `<strong>Mensagem:</strong><br><pre style="white-space:pre-wrap; font-family:inherit;">${templateText}</pre>`;
+
+  // E-mail interno para o analista responsável
+  await transporter.sendMail({
+    from: gmailUser,
+    to: analystEmail,
+    subject,
+    html: bodyHtml,
+  });
+
+  // Cópia para o cliente, confirmando o recebimento do template preenchido
+  await transporter.sendMail({
+    from: gmailUser,
+    to: clientEmail,
+    subject: `Recebemos seu template de WhatsApp - ${clientName}`,
+    html:
+      `Olá,<br><br>` +
+      `Recebemos o seu template de WhatsApp para homologação. Segue uma cópia do que foi enviado:<br><br>` +
+      `<strong>Status WhatsApp:</strong> ${whatsappStatus}<br><br>` +
+      `<pre style="white-space:pre-wrap; font-family:inherit;">${templateText}</pre><br>` +
+      `Em breve nosso time (${analystName}) dará retorno sobre a homologação.`,
+  });
+
+  return { skipped: false };
+}
 
 exports.handler = async function (event) {
   if (event.httpMethod !== "POST") {
@@ -77,7 +160,19 @@ exports.handler = async function (event) {
       };
     }
 
-    return { statusCode: 200, body: JSON.stringify({ success: true }) };
+    // O e-mail é um "bônus": se ele falhar, não derruba o envio pro cliente,
+    // já que o registro no Slack (fonte da verdade) já foi feito com sucesso.
+    let emailWarning;
+    try {
+      await sendNotificationEmail(data);
+    } catch (emailErr) {
+      emailWarning = String(emailErr);
+    }
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ success: true, emailWarning }),
+    };
   } catch (err) {
     return {
       statusCode: 502,
